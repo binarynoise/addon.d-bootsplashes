@@ -1,0 +1,33 @@
+#!/sbin/sh
+
+set -u
+
+#exec >/cache/install.log 2>&1
+#set -x
+
+OUTFD=/proc/self/fd/$2
+ZIPFILE="$3"
+
+INSTALLDIR=/tmp/INSTALLDIR
+rm -rf $INSTALLDIR
+mkdir -p $INSTALLDIR
+
+unzip -o "$ZIPFILE" "utils/*" "update.sh" -d $INSTALLDIR
+
+# Source helper script and mount the partitions
+. $INSTALLDIR/utils/utils.sh
+. $INSTALLDIR/utils/mount_utils.sh
+
+mount_partitions
+
+# Apply the update now that the partitions have been mounted
+. $INSTALLDIR/update.sh
+
+# Clean up
+rm -rf $INSTALLDIR
+
+umount_all
+
+#( sleep 1 mount /cache ) &
+
+exit 0
